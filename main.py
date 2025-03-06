@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import requests
 import os
@@ -13,8 +15,20 @@ KLAVIYO_URL = os.getenv("KLAVIYO_URL")
 app = FastAPI()
 
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://www.solesme.com", "https://solesmes.webflow.io/"],
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
+
 class SubscribeRequest(BaseModel):
     email: str
+
+@app.options("/subscribe")
+async def options_handler():
+    return JSONResponse(content={}, headers={"Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST"})
 
 @app.post("/subscribe")
 def subscribe_email(request: SubscribeRequest):
